@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Fixed Animated Login</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:monospace;
+}
+
+body{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:black;
+overflow:hidden;
+}
+
+/* MATRIX BACKGROUND */
+
+#matrix{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+z-index:0;
+}
+
+/* THREE.JS BACKGROUND */
+
+.webgl{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+z-index:1;
+}
+
+/* LOGIN PANEL */
+
+.login{
+position:relative;
+z-index:5;
+width:380px;
+padding:40px;
+background:rgba(0,0,0,0.6);
+border:1px solid #00ffff;
+box-shadow:0 0 40px #00ffff;
+backdrop-filter:blur(10px);
+text-align:center;
+color:#00ffff;
+}
+
+.title{
+font-size:28px;
+margin-bottom:25px;
+}
+
+input{
+width:100%;
+padding:12px;
+margin:12px 0;
+background:black;
+border:1px solid #00ffff;
+color:#00ffff;
+}
+
+button{
+width:100%;
+padding:12px;
+background:black;
+border:1px solid #00ffff;
+color:#00ffff;
+cursor:pointer;
+transition:.3s;
+}
+
+button:hover{
+background:#00ffff;
+color:black;
+}
+
+</style>
+</head>
+
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div class="login">
+
+<div class="title">ACCESS TERMINAL</div>
+
+<input placeholder="Username">
+<input type="password" placeholder="Password">
+
+<button>LOGIN</button>
+
+</div>
+
+<script>
+
+/* MATRIX */
+
+const canvas=document.getElementById("matrix");
+const ctx=canvas.getContext("2d");
+
+canvas.height=window.innerHeight;
+canvas.width=window.innerWidth;
+
+const letters="01ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const fontSize=16;
+const columns=canvas.width/fontSize;
+const drops=[];
+
+for(let x=0;x<columns;x++) drops[x]=1;
+
+function draw(){
+
+ctx.fillStyle="rgba(0,0,0,0.05)";
+ctx.fillRect(0,0,canvas.width,canvas.height);
+
+ctx.fillStyle="#00ffff";
+ctx.font=fontSize+"px monospace";
+
+for(let i=0;i<drops.length;i++){
+
+const text=letters[Math.floor(Math.random()*letters.length)];
+
+ctx.fillText(text,i*fontSize,drops[i]*fontSize);
+
+if(drops[i]*fontSize>canvas.height && Math.random()>0.975)
+drops[i]=0;
+
+drops[i]++;
+
+}
+
+}
+
+setInterval(draw,33);
+
+
+/* THREE JS STARFIELD */
+
+const scene=new THREE.Scene();
+
+const camera=new THREE.PerspectiveCamera(
+75,
+window.innerWidth/window.innerHeight,
+0.1,
+1000
+);
+
+const renderer=new THREE.WebGLRenderer({alpha:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.domElement.classList.add("webgl");
+
+document.body.appendChild(renderer.domElement);
+
+const starsGeometry=new THREE.BufferGeometry();
+const starCount=3000;
+
+const positions=[];
+
+for(let i=0;i<starCount;i++){
+
+positions.push(
+(Math.random()-0.5)*2000,
+(Math.random()-0.5)*2000,
+(Math.random()-0.5)*2000
+);
+
+}
+
+starsGeometry.setAttribute(
+'position',
+new THREE.Float32BufferAttribute(positions,3)
+);
+
+const starsMaterial=new THREE.PointsMaterial({
+color:0x00ffff,
+size:2
+});
+
+const starField=new THREE.Points(
+starsGeometry,
+starsMaterial
+);
+
+scene.add(starField);
+
+camera.position.z=5;
+
+function animate(){
+
+requestAnimationFrame(animate);
+
+starField.rotation.x+=0.0004;
+starField.rotation.y+=0.0004;
+
+renderer.render(scene,camera);
+
+}
+
+animate();
+
+</script>
+
+</body>
+</html>
